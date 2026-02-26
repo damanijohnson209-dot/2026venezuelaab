@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Venezuela Absolute Resolve — Operational Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════
+VENEZUELA ABSOLUTE RESOLVE — OPERATIONAL WEATHER SYSTEM
+Design: Military Ops Console / Dark Industrial
+═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg-void: #050709;
+–bg-base: #080c10;
+–bg-surface: #0c1219;
+–bg-raised: #101820;
+–bg-card: #121a24;
+–bg-hover: #172030;
+–border-dim: #1a2535;
+–border-mid: #243548;
+–border-bright: #2e4560;
+–border-glow: rgba(0,210,255,0.3);
+
+–accent: #00d2ff;
+–accent-dim: #0099bb;
+–accent-glow: rgba(0,210,255,0.12);
+–accent-pulse: rgba(0,210,255,0.25);
+
+–amber: #ffb800;
+–amber-dim: rgba(255,184,0,0.15);
+–red: #ff3355;
+–red-dim: rgba(255,51,85,0.15);
+–green: #00ff9d;
+–green-dim: rgba(0,255,157,0.12);
+
+–text-primary: #d0e4f0;
+–text-secondary:#7a9ab5;
+–text-dim: #3a5570;
+–text-muted: #253545;
+
+–header-h: 58px;
+–loctab-h: 46px;
+–navh: 42px;
+
+–font-ui: ‘Exo 2’, sans-serif;
+–font-mono: ‘JetBrains Mono’, monospace;
+–font-display: ‘Bebas Neue’, sans-serif;
+
+–radius: 4px;
+–shadow-card: 0 4px 24px rgba(0,0,0,0.6);
+}
+
+html, body { height: 100%; background: var(–bg-void); color: var(–text-primary); font-family: var(–font-ui); overflow: hidden; }
+
+/* ── SCROLLBARS ────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(–bg-base); }
+::-webkit-scrollbar-thumb { background: var(–border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(–accent-dim); }
+
+/* ── UTILITY ────────────────────────────────────────── */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.22s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+.status-dot.active { background: var(–green); box-shadow: 0 0 8px var(–green); animation: blink 2.5s ease infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ── LOGIN ──────────────────────────────────────────── */
+.login-overlay {
+position: fixed; inset: 0; background: var(–bg-void);
+display: flex; align-items: center; justify-content: center; z-index: 9999;
+background-image:
+radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,210,255,0.04) 0%, transparent 70%),
+repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,210,255,0.03) 40px),
+repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,210,255,0.03) 40px);
+}
+.login-box {
+background: var(–bg-surface); border: 1px solid var(–border-mid);
+border-radius: 8px; padding: 40px 48px;
+width: 420px; text-align: center;
+box-shadow: 0 0 80px rgba(0,0,0,0.9), 0 0 40px rgba(0,210,255,0.05);
+position: relative;
+}
+.login-box::before {
+content: ‘’; position: absolute; top: 0; left: 30%; right: 30%;
+height: 1px; background: linear-gradient(90deg, transparent, var(–accent), transparent);
+}
+.login-emblem {
+width: 72px; height: 72px; margin: 0 auto 24px;
+position: relative; display: flex; align-items: center; justify-content: center;
+}
+.emblem-ring {
+position: absolute; inset: 0; border: 1px solid var(–accent-dim);
+border-radius: 50%; animation: spin 8s linear infinite;
+border-top-color: var(–accent); border-right-color: transparent;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.emblem-inner { z-index: 1; }
+.emblem-icon { font-size: 32px; color: var(–accent); text-shadow: 0 0 20px var(–accent); }
+.login-title { font-family: var(–font-display); font-size: 22px; letter-spacing: 3px; color: var(–accent); margin-bottom: 4px; }
+.login-subtitle { font-family: var(–font-mono); font-size: 10px; color: var(–text-secondary); letter-spacing: 2px; margin-bottom: 4px; }
+.login-classification { font-family: var(–font-mono); font-size: 9px; color: var(–amber); letter-spacing: 2px; margin-bottom: 28px; }
+.login-fields { display: flex; flex-direction: column; gap: 14px; text-align: left; }
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-family: var(–font-mono); font-size: 9px; color: var(–text-dim); letter-spacing: 2px; }
+.login-input {
+background: var(–bg-raised); border: 1px solid var(–border-mid);
+border-radius: var(–radius); color: var(–text-primary);
+font-family: var(–font-mono); font-size: 13px; padding: 10px 12px; outline: none;
+transition: border 0.2s, box-shadow 0.2s;
+}
+.login-input:focus { border-color: var(–accent-dim); box-shadow: 0 0 0 2px var(–accent-glow); }
+.login-hint { font-family: var(–font-mono); font-size: 9px; color: var(–text-muted); text-align: center; }
+.login-btn {
+background: var(–accent-glow); border: 1px solid var(–accent-dim);
+color: var(–accent); font-family: var(–font-display); font-size: 16px; letter-spacing: 3px;
+padding: 12px; border-radius: var(–radius); cursor: pointer; display: flex;
+align-items: center; justify-content: center; gap: 10px; margin-top: 4px;
+transition: all 0.2s; width: 100%;
+}
+.login-btn:hover { background: rgba(0,210,255,0.18); border-color: var(–accent); box-shadow: 0 0 20px rgba(0,210,255,0.15); }
+.login-error { font-family: var(–font-mono); font-size: 10px; color: var(–red); text-align: center; padding: 6px; border: 1px solid var(–red-dim); border-radius: var(–radius); background: var(–red-dim); letter-spacing: 1px; }
+.login-footer { margin-top: 24px; font-family: var(–font-mono); font-size: 10px; color: var(–text-dim); display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* ── APP SHELL ──────────────────────────────────────── */
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── HEADER ──────────────────────────────────────────── */
+.header {
+height: var(–header-h); background: var(–bg-surface);
+border-bottom: 1px solid var(–border-dim);
+display: flex; align-items: center; padding: 0 16px; gap: 16px;
+flex-shrink: 0; position: relative; z-index: 200;
+}
+.header::after {
+content: ‘’; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+background: linear-gradient(90deg, transparent 0%, var(–accent-dim) 30%, var(–accent-dim) 70%, transparent 100%);
+opacity: 0.4;
+}
+.header-left { display: flex; align-items: center; gap: 12px; min-width: 280px; }
+.header-logo { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.logo-hex { font-size: 28px; color: var(–accent); text-shadow: 0 0 15px var(–accent); }
+.brand-mission { font-family: var(–font-display); font-size: 17px; letter-spacing: 2px; color: var(–accent); line-height: 1; }
+.brand-sub { font-family: var(–font-mono); font-size: 8px; color: var(–text-secondary); letter-spacing: 1.5px; margin-top: 3px; }
+
+.header-center { flex: 1; display: flex; justify-content: center; }
+.search-wrap { position: relative; width: 100%; max-width: 440px; }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(–text-dim); font-size: 15px; pointer-events: none; }
+.search-input {
+width: 100%; background: var(–bg-raised); border: 1px solid var(–border-dim);
+border-radius: var(–radius); color: var(–text-primary);
+font-family: var(–font-mono); font-size: 11px; padding: 8px 32px 8px 34px; outline: none;
+transition: border 0.2s;
+}
+.search-input:focus { border-color: var(–border-bright); }
+.search-input::placeholder { color: var(–text-muted); }
+.search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(–text-dim); cursor: pointer; font-size: 11px; display: none; }
+.search-clear.visible { display: block; }
+
+.header-right { display: flex; align-items: center; gap: 16px; min-width: 220px; justify-content: flex-end; }
+.header-clock { text-align: right; }
+.clock-utc { font-family: var(–font-mono); font-size: 15px; color: var(–accent); letter-spacing: 1px; }
+.clock-date { font-family: var(–font-mono); font-size: 9px; color: var(–text-secondary); letter-spacing: 1px; }
+.header-status { display: flex; align-items: center; gap: 6px; }
+.status-label { font-family: var(–font-mono); font-size: 9px; color: var(–text-secondary); letter-spacing: 1px; }
+.logout-btn { background: none; border: 1px solid var(–border-mid); border-radius: var(–radius); color: var(–text-dim); font-size: 14px; width: 30px; height: 30px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.logout-btn:hover { border-color: var(–red); color: var(–red); background: var(–red-dim); }
+
+/* ── LOCATION TABS ───────────────────────────────────── */
+.loc-tabs {
+height: var(–loctab-h); background: var(–bg-base);
+border-bottom: 1px solid var(–border-dim);
+display: flex; align-items: center; padding: 0 16px;
+gap: 0; justify-content: space-between; flex-shrink: 0;
+}
+.loc-tab-track { display: flex; gap: 4px; align-items: center; }
+.loc-tab {
+display: flex; flex-direction: column; align-items: flex-start;
+padding: 6px 20px; border: 1px solid transparent;
+border-bottom: none; border-radius: 4px 4px 0 0;
+background: transparent; color: var(–text-secondary);
+cursor: pointer; transition: all 0.2s; gap: 1px;
+font-family: var(–font-ui); position: relative; top: 1px;
+}
+.loc-tab:hover { background: var(–bg-raised); color: var(–text-primary); }
+.loc-tab.active { background: var(–bg-surface); border-color: var(–border-mid); border-bottom-color: var(–bg-surface); color: var(–accent); }
+.loc-tab.active::before { content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(–accent); border-radius: 4px 4px 0 0; }
+.loc-icao { font-family: var(–font-display); font-size: 18px; letter-spacing: 2px; line-height: 1; }
+.loc-name { font-family: var(–font-mono); font-size: 8px; letter-spacing: 1px; color: var(–text-dim); }
+.loc-tab-add { background: none; border: 1px dashed var(–border-mid); border-radius: var(–radius); color: var(–text-dim); font-family: var(–font-mono); font-size: 10px; padding: 4px 10px; cursor: pointer; margin-left: 8px; transition: all 0.2s; letter-spacing: 1px; }
+.loc-tab-add:hover { border-color: var(–accent-dim); color: var(–accent); }
+.loc-cycle { display: flex; align-items: center; gap: 8px; }
+.cycle-label { font-family: var(–font-mono); font-size: 9px; color: var(–text-dim); letter-spacing: 1px; }
+.cycle-select { background: var(–bg-raised); border: 1px solid var(–border-mid); color: var(–accent); font-family: var(–font-mono); font-size: 12px; padding: 5px 10px; border-radius: var(–radius); outline: none; cursor: pointer; }
+
+/* ── SECTION NAV ──────────────────────────────────────── */
+.section-nav {
+height: var(–navh); background: var(–bg-surface);
+border-bottom: 1px solid var(–border-dim);
+flex-shrink: 0; overflow-x: auto; overflow-y: hidden;
+}
+.section-nav::-webkit-scrollbar { height: 2px; }
+.nav-items { display: flex; height: 100%; padding: 0 16px; gap: 2px; }
+.nav-item {
+display: flex; align-items: center; gap: 7px;
+padding: 0 18px; background: transparent; border: none;
+border-bottom: 2px solid transparent;
+color: var(–text-secondary); font-family: var(–font-ui); font-size: 12px;
+font-weight: 600; letter-spacing: 1px; cursor: pointer;
+transition: all 0.18s; white-space: nowrap;
+}
+.nav-item .nav-icon { font-size: 10px; }
+.nav-item:hover { color: var(–text-primary); border-bottom-color: var(–border-bright); }
+.nav-item.active { color: var(–accent); border-bottom-color: var(–accent); background: rgba(0,210,255,0.04); }
+
+/* ── CONTENT AREA ────────────────────────────────────── */
+.content { flex: 1; overflow-y: auto; padding: 20px; background: var(–bg-base); }
+
+/* ── PAGE HEADER ─────────────────────────────────────── */
+.page-header { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(–border-dim); }
+.page-header-inner { display: flex; align-items: flex-end; justify-content: space-between; }
+.page-title { font-family: var(–font-display); font-size: 24px; letter-spacing: 3px; color: var(–accent); }
+.page-subtitle { font-family: var(–font-mono); font-size: 10px; color: var(–text-secondary); letter-spacing: 1px; margin-top: 4px; }
+.page-meta { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.meta-chip { font-family: var(–font-mono); font-size: 9px; letter-spacing: 1px; padding: 3px 9px; border-radius: 2px; border: 1px solid var(–border-dim); color: var(–text-dim); }
+.meta-chip.active { border-color: var(–accent-dim); color: var(–accent); background: var(–accent-glow); }
+
+/* ── COLLAPSIBLE SECTION ─────────────────────────────── */
+.collapsible { margin-bottom: 14px; border: 1px solid var(–border-dim); border-radius: 6px; overflow: hidden; }
+.collapsible-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 11px 16px; background: var(–bg-card); cursor: pointer;
+transition: background 0.18s; user-select: none;
+}
+.collapsible-header:hover { background: var(–bg-hover); }
+.collapsible-left { display: flex; align-items: center; gap: 10px; }
+.collapsible-num { font-family: var(–font-mono); font-size: 10px; color: var(–text-dim); min-width: 30px; }
+.collapsible-title { font-family: var(–font-ui); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; color: var(–text-primary); }
+.collapsible-badge { font-family: var(–font-mono); font-size: 9px; padding: 2px 7px; border-radius: 2px; border: 1px solid var(–border-mid); color: var(–text-dim); letter-spacing: 1px; }
+.collapsible-right { display: flex; align-items: center; gap: 10px; }
+.chevron { font-size: 10px; color: var(–text-dim); transition: transform 0.2s; }
+.chevron.open { transform: rotate(90deg); }
+.collapsible-body { padding: 16px; background: var(–bg-raised); border-top: 1px solid var(–border-dim); }
+.collapsed .collapsible-body { display: none; }
+
+/* ── CARD ────────────────────────────────────────────── */
+.card { background: var(–bg-card); border: 1px solid var(–border-dim); border-radius: 6px; overflow: hidden; transition: border-color 0.2s; box-shadow: var(–shadow-card); }
+.card:hover { border-color: var(–border-mid); }
+.card-head { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px solid var(–border-dim); background: rgba(0,0,0,0.25); }
+.card-title { font-family: var(–font-ui); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(–text-secondary); text-transform: uppercase; }
+.card-actions { display: flex; gap: 5px; }
+.card-btn { background: none; border: 1px solid var(–border-dim); border-radius: 3px; color: var(–text-dim); font-family: var(–font-mono); font-size: 10px; padding: 3px 8px; cursor: pointer; transition: all 0.15s; }
+.card-btn:hover { border-color: var(–accent-dim); color: var(–accent); }
+.card-btn.danger:hover { border-color: var(–red); color: var(–red); }
+.card-body { padding: 14px; }
+
+/* ── GRID LAYOUTS ────────────────────────────────────── */
+.grid-1 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+/* ── UPLOAD ZONE ──────────────────────────────────────── */
+.upload-zone {
+border: 1px dashed var(–border-bright); border-radius: 5px;
+min-height: 150px; display: flex; flex-direction: column;
+align-items: center; justify-content: center; gap: 8px;
+cursor: pointer; transition: all 0.2s; position: relative;
+background: rgba(0,0,0,0.2); overflow: hidden;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(–accent-dim); background: var(–accent-glow); }
+.upload-zone.has-content { border-style: solid; border-color: var(–border-mid); min-height: auto; }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 26px; color: var(–text-muted); }
+.upload-text { font-family: var(–font-mono); font-size: 10px; color: var(–text-dim); text-align: center; letter-spacing: 1px; line-height: 1.6; }
+.upload-text strong { color: var(–text-secondary); }
+.upload-preview { max-width: 100%; max-height: 380px; object-fit: contain; display: block; border-radius: 3px; }
+.upload-gif { max-width: 100%; border-radius: 3px; }
+.upload-controls { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+/* ── ANALYSIS FIELD ──────────────────────────────────── */
+.analysis-label { font-family: var(–font-mono); font-size: 9px; letter-spacing: 1.5px; color: var(–text-dim); margin-top: 12px; margin-bottom: 5px; display: block; text-transform: uppercase; }
+.analysis-field {
+width: 100%; background: rgba(0,0,0,0.35); border: 1px solid var(–border-dim);
+border-radius: 3px; color: var(–text-primary);
+font-family: var(–font-mono); font-size: 11px; padding: 9px;
+resize: vertical; min-height: 80px; outline: none; line-height: 1.65;
+transition: border 0.2s;
+}
+.analysis-field:focus { border-color: var(–accent-dim); }
+.analysis-field::placeholder { color: var(–text-muted); }
+
+/* ── DISCUSSION NOTES ────────────────────────────────── */
+.discussion-wrap { margin-top: 10px; }
+.discussion-toggle { display: flex; align-items: center; gap: 8px; font-family: var(–font-mono); font-size: 10px; color: var(–text-dim); cursor: pointer; letter-spacing: 1px; padding: 4px 0; }
+.discussion-toggle:hover { color: var(–text-secondary); }
+.discussion-body { margin-top: 6px; }
+.discussion-field {
+width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(–border-dim);
+border-radius: 3px; color: var(–text-secondary);
+font-family: var(–font-mono); font-size: 11px; padding: 8px;
+resize: vertical; min-height: 60px; outline: none; line-height: 1.6;
+transition: border 0.2s;
+}
+.discussion-field:focus { border-color: var(–border-bright); }
+
+/* ── LEVEL TABS (upper air / model) ──────────────────── */
+.level-tabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+.level-tab { background: var(–bg-card); border: 1px solid var(–border-dim); border-radius: 3px; color: var(–text-secondary); font-family: var(–font-mono); font-size: 11px; padding: 5px 14px; cursor: pointer; transition: all 0.15s; letter-spacing: 1px; }
+.level-tab:hover { border-color: var(–border-bright); color: var(–text-primary); }
+.level-tab.active { background: var(–accent-glow); border-color: var(–accent-dim); color: var(–accent); }
+
+/* ── COMPARE PANEL ───────────────────────────────────── */
+.compare-select-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.compare-select-bar .label { font-family: var(–font-mono); font-size: 10px; color: var(–text-dim); letter-spacing: 1px; }
+.compare-btn { background: var(–bg-card); border: 1px solid var(–border-dim); border-radius: 3px; color: var(–text-secondary); font-family: var(–font-mono); font-size: 10px; padding: 5px 12px; cursor: pointer; transition: all 0.15s; }
+.compare-btn:hover { border-color: var(–accent-dim); color: var(–accent); }
+.compare-btn.active { background: var(–accent-glow); border-color: var(–accent-dim); color: var(–accent); }
+
+/* ── STOPLIGHT TABLE ─────────────────────────────────── */
+.stoplight-table { width: 100%; border-collapse: collapse; font-family: var(–font-mono); font-size: 11px; }
+.stoplight-table th { padding: 9px 12px; text-align: left; background: rgba(0,0,0,0.4); border: 1px solid var(–border-dim); color: var(–text-secondary); font-size: 10px; letter-spacing: 1px; font-weight: 500; }
+.stoplight-table td { padding: 8px 12px; border: 1px solid var(–border-dim); color: var(–text-primary); vertical-align: middle; }
+.stoplight-table tr:hover td { background: rgba(255,255,255,0.02); }
+.stoplight-table select, .stoplight-table input { background: transparent; border: none; outline: none; color: inherit; font-family: var(–font-mono); font-size: 11px; width: 100%; }
+.light { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.light-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.g .light-dot { background: var(–green); box-shadow: 0 0 8px var(–green); }
+.g { color: var(–green); }
+.a .light-dot { background: var(–amber); box-shadow: 0 0 8px var(–amber); }
+.a { color: var(–amber); }
+.r .light-dot { background: var(–red); box-shadow: 0 0 8px var(–red); }
+.r { color: var(–red); }
+
+/* ── TIMELINE ─────────────────────────────────────────── */
+.timeline { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+.timeline-day { min-width: 140px; border: 1px solid var(–border-dim); border-left: none; }
+.timeline-day:first-child { border-left: 1px solid var(–border-dim); border-radius: 4px 0 0 4px; }
+.timeline-day:last-child { border-radius: 0 4px 4px 0; }
+.timeline-day-head { padding: 7px 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(–border-dim); text-align: center; }
+.timeline-day-label { font-family: var(–font-display); font-size: 14px; letter-spacing: 1px; color: var(–accent); }
+.timeline-day-date { font-family: var(–font-mono); font-size: 9px; color: var(–text-dim); }
+.timeline-day-body { padding: 10px; }
+.timeline-field { width: 100%; background: transparent; border: none; outline: none; color: var(–text-primary); font-family: var(–font-mono); font-size: 10px; resize: none; height: 80px; line-height: 1.5; }
+.timeline-field::placeholder { color: var(–text-muted); }
+.timeline-risk { display: flex; gap: 4px; justify-content: center; padding: 6px 0; border-top: 1px solid var(–border-dim); }
+.timeline-risk-btn { width: 20px; height: 20px; border-radius: 50%; border: 2px solid; cursor: pointer; transition: transform 0.15s; }
+.timeline-risk-btn:hover { transform: scale(1.2); }
+.timeline-risk-btn.grn { border-color: var(–green); }
+.timeline-risk-btn.grn.on { background: var(–green); box-shadow: 0 0 8px var(–green); }
+.timeline-risk-btn.amb { border-color: var(–amber); }
+.timeline-risk-btn.amb.on { background: var(–amber); box-shadow: 0 0 8px var(–amber); }
+.timeline-risk-btn.red { border-color: var(–red); }
+.timeline-risk-btn.red.on { background: var(–red); box-shadow: 0 0 8px var(–red); }
+
+/* ── ARCHIVE ─────────────────────────────────────────── */
+.archive-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.archive-filters select, .archive-filters input { background: var(–bg-card); border: 1px solid var(–border-dim); color: var(–text-primary); font-family: var(–font-mono); font-size: 11px; padding: 6px 10px; border-radius: 3px; outline: none; }
+.archive-table { width: 100%; border-collapse: collapse; }
+.archive-table th { padding: 8px 12px; background: var(–bg-card); border: 1px solid var(–border-dim); color: var(–text-secondary); font-family: var(–font-mono); font-size: 10px; letter-spacing: 1px; text-align: left; }
+.archive-table td { padding: 9px 12px; border: 1px solid var(–border-dim); font-family: var(–font-mono); font-size: 11px; color: var(–text-primary); }
+.archive-table tr:hover td { background: var(–bg-hover); }
+.archive-table input, .archive-table select { background: transparent; border: none; outline: none; color: inherit; font-family: inherit; font-size: inherit; width: 100%; }
+.add-row-btn { margin-top: 10px; background: var(–bg-card); border: 1px dashed var(–border-mid); color: var(–text-secondary); font-family: var(–font-mono); font-size: 10px; padding: 7px 16px; border-radius: 3px; cursor: pointer; letter-spacing: 1px; transition: all 0.15s; }
+.add-row-btn:hover { border-color: var(–accent-dim); color: var(–accent); }
+.version-badge { display: inline-block; background: var(–accent-glow); border: 1px solid var(–accent-dim); color: var(–accent); font-family: var(–font-mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 1px; }
+
+/* ── DIVIDER ─────────────────────────────────────────── */
+.section-div { border: none; border-top: 1px solid var(–border-dim); margin: 16px 0; }
+
+/* ── IMPACT ASSET TABLE ──────────────────────────────── */
+.asset-table { width: 100%; border-collapse: collapse; }
+.asset-table th { padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(–border-dim); color: var(–text-secondary); font-family: var(–font-mono); font-size: 10px; letter-spacing: 1px; }
+.asset-table td { border: 1px solid var(–border-dim); padding: 0; }
+.asset-table td textarea { width: 100%; background: transparent; border: none; outline: none; color: var(–text-primary); font-family: var(–font-mono); font-size: 11px; padding: 8px 10px; resize: none; min-height: 60px; line-height: 1.5; }
+
+/* ── LIGHTBOX ────────────────────────────────────────── */
+.lightbox { position: fixed; inset: 0; z-index: 5000; display: flex; align-items: center; justify-content: center; }
+.lightbox-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.95); }
+.lightbox-inner { position: relative; max-width: 95vw; max-height: 95vh; }
+.lightbox-close { position: absolute; top: -38px; right: 0; background: none; border: 1px solid var(–border-mid); border-radius: 3px; color: var(–text-primary); font-family: var(–font-mono); font-size: 11px; padding: 4px 10px; cursor: pointer; }
+.lightbox-close:hover { border-color: var(–red); color: var(–red); }
+.lightbox-inner img { max-width: 95vw; max-height: 88vh; object-fit: contain; border-radius: 3px; position: relative; z-index: 1; }
+.lightbox-caption { position: relative; z-index: 1; font-family: var(–font-mono); font-size: 10px; color: var(–text-secondary); text-align: center; margin-top: 8px; }
+
+/* ── COMPARE MODAL ───────────────────────────────────── */
+.compare-modal { position: fixed; inset: 0; z-index: 4000; display: flex; align-items: center; justify-content: center; }
+.compare-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.9); }
+.compare-inner { position: relative; z-index: 1; background: var(–bg-surface); border: 1px solid var(–border-mid); border-radius: 8px; width: 92vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+.compare-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(–border-dim); }
+.compare-title { font-family: var(–font-display); font-size: 16px; letter-spacing: 2px; color: var(–accent); }
+.compare-close { background: none; border: 1px solid var(–border-mid); border-radius: 3px; color: var(–text-dim); font-size: 12px; padding: 4px 10px; cursor: pointer; }
+.compare-close:hover { border-color: var(–red); color: var(–red); }
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; padding: 16px; overflow-y: auto; flex: 1; }
+.compare-item { border: 1px solid var(–border-dim); border-radius: 4px; overflow: hidden; }
+.compare-item-title { padding: 6px 10px; background: rgba(0,0,0,0.3); font-family: var(–font-mono); font-size: 10px; color: var(–text-secondary); letter-spacing: 1px; border-bottom: 1px solid var(–border-dim); }
+.compare-item img { width: 100%; object-fit: contain; max-height: 300px; }
+
+/* ── TOAST ───────────────────────────────────────────── */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(–bg-surface); border: 1px solid var(–border-mid); border-radius: 5px; padding: 10px 18px; font-family: var(–font-mono); font-size: 12px; color: var(–text-primary); z-index: 9000; box-shadow: 0 8px 32px rgba(0,0,0,0.8); animation: slideIn 0.2s ease; }
+@keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 900px) {
+.grid-2, .grid-3 { grid-template-columns: 1fr; }
+.header-left { min-width: auto; }
+.header-right { min-width: auto; }
+}
+@media (max-width: 600px) {
+.header { padding: 0 10px; gap: 8px; }
+.brand-mission { font-size: 14px; }
+.content { padding: 12px; }
+}
+
+/* ── SEARCH HIGHLIGHT ────────────────────────────────── */
+.search-highlight { background: rgba(0,210,255,0.2); border-radius: 2px; padding: 0 2px; }
+
+/* ── MODEL SPECIFIC ──────────────────────────────────── */
+.model-product-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+.model-product-tab { background: var(–bg-card); border: 1px solid var(–border-dim); border-radius: 3px; color: var(–text-secondary); font-family: var(–font-mono); font-size: 10px; padding: 4px 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 1px; }
+.model-product-tab.active { background: rgba(255,184,0,0.1); border-color: var(–amber-dim); color: var(–amber); }
+.model-product-tab:hover { border-color: var(–border-bright); color: var(–text-primary); }
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+
+<div id="loginOverlay" class="login-overlay">
+<div class="login-box">
+<div class="login-emblem">
+<div class="emblem-ring"></div>
+<div class="emblem-inner">
+<span class="emblem-icon">⬡</span>
+</div>
+</div>
+<div class="login-title">VENEZUELA ABSOLUTE RESOLVE</div>
+<div class="login-subtitle">OPERATIONAL WEATHER ANALYSIS SYSTEM</div>
+<div class="login-classification">// ACCESS RESTRICTED //</div>
+<div class="login-fields">
+<div class="field-group">
+<label class="field-label">OPERATOR ID</label>
+<input type="text" id="loginUser" class="login-input" placeholder="Enter operator ID" autocomplete="off"/>
+</div>
+<div class="field-group">
+<label class="field-label">ACCESS CODE</label>
+<input type="password" id="loginPass" class="login-input" placeholder="Enter access code" autocomplete="off"/>
+</div>
+<div class="login-hint">Default: demo / demo1234</div>
+<button class="login-btn" onclick="attemptLogin()">
+<span class="btn-text">AUTHENTICATE</span>
+<span class="btn-arrow">→</span>
+</button>
+<div id="loginError" class="login-error hidden">AUTHENTICATION FAILED — INVALID CREDENTIALS</div>
+</div>
+<div class="login-footer">
+<span class="status-dot active"></span> SYSTEM OPERATIONAL
+</div>
+</div>
+</div>
+
+<!-- MAIN APP -->
+
+<div id="app" class="app hidden">
+
+<!-- HEADER -->
+
+<header class="header">
+<div class="header-left">
+<div class="header-logo">
+<span class="logo-hex">⬡</span>
+</div>
+<div class="header-brand">
+<div class="brand-mission">VENEZUELA ABSOLUTE RESOLVE</div>
+<div class="brand-sub">OPERATIONAL WEATHER ANALYSIS SYSTEM</div>
+</div>
+</div>
+
+```
+<div class="header-center">
+<div class="search-wrap">
+<span class="search-icon">⌕</span>
+<input type="text" id="globalSearch" class="search-input" placeholder="SEARCH SECTIONS, CONTENT..." oninput="handleSearch(this.value)"/>
+<span class="search-clear" onclick="clearSearch()" id="searchClear">✕</span>
+</div>
+</div>
+
+<div class="header-right">
+<div class="header-clock">
+<div class="clock-utc" id="clockUTC">00:00:00Z</div>
+<div class="clock-date" id="clockDate">-- --- ----</div>
+</div>
+<div class="header-status">
+<span class="status-dot active"></span>
+<span class="status-label">LIVE</span>
+</div>
+<button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+</div>
+```
+
+</header>
+
+<!-- LOCATION TABS -->
+
+<div class="loc-tabs">
+<div class="loc-tab-track">
+<button class="loc-tab active" data-loc="TJRV" onclick="switchLocation('TJRV')">
+<span class="loc-icao">TJRV</span>
+<span class="loc-name">Roosevelt Roads, PR</span>
+</button>
+<button class="loc-tab" data-loc="SVMI" onclick="switchLocation('SVMI')">
+<span class="loc-icao">SVMI</span>
+<span class="loc-name">Simón Bolívar, VE</span>
+</button>
+<button class="loc-tab-add" onclick="duplicateAOR()" title="Duplicate AOR">
+<span>+ AOR</span>
+</button>
+</div>
+<div class="loc-cycle">
+<span class="cycle-label">CYCLE:</span>
+<select class="cycle-select" id="cycleSelect" onchange="setCycle(this.value)">
+<option value="00Z">00Z</option>
+<option value="06Z">06Z</option>
+<option value="12Z" selected>12Z</option>
+<option value="18Z">18Z</option>
+</select>
+</div>
+</div>
+
+<!-- SECTION NAV -->
+
+<nav class="section-nav">
+<div class="nav-items">
+<button class="nav-item active" data-section="climatology" onclick="switchSection('climatology')">
+<span class="nav-icon">◈</span> CLIMATOLOGY
+</button>
+<button class="nav-item" data-section="observations" onclick="switchSection('observations')">
+<span class="nav-icon">◈</span> OBSERVATIONS
+</button>
+<button class="nav-item" data-section="upper-air" onclick="switchSection('upper-air')">
+<span class="nav-icon">◈</span> UPPER AIR
+</button>
+<button class="nav-item" data-section="model-guidance" onclick="switchSection('model-guidance')">
+<span class="nav-icon">◈</span> MODEL GUIDANCE
+</button>
+<button class="nav-item" data-section="integrated" onclick="switchSection('integrated')">
+<span class="nav-icon">◈</span> INTEGRATED ASSESSMENT
+</button>
+<button class="nav-item" data-section="archive" onclick="switchSection('archive')">
+<span class="nav-icon">◈</span> ARCHIVE
+</button>
+</div>
+</nav>
+
+<!-- CONTENT -->
+
+<main class="content" id="mainContent">
+<!-- Injected by JS -->
+</main>
+
+</div>
+
+<!-- LIGHTBOX -->
+
+<div id="lightbox" class="lightbox hidden">
+<div class="lightbox-backdrop" onclick="closeLightbox()"></div>
+<div class="lightbox-inner">
+<button class="lightbox-close" onclick="closeLightbox()">✕ CLOSE</button>
+<img id="lightboxImg" src="" alt=""/>
+<div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+</div>
+
+<!-- COMPARE MODAL -->
+
+<div id="compareModal" class="compare-modal hidden">
+<div class="compare-backdrop" onclick="closeCompare()"></div>
+<div class="compare-inner">
+<div class="compare-header">
+<span class="compare-title">SIDE-BY-SIDE COMPARISON</span>
+<button class="compare-close" onclick="closeCompare()">✕</button>
+</div>
+<div class="compare-grid" id="compareGrid"></div>
+</div>
+</div>
+
+<!-- TOAST -->
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA.JS — State management & localStorage persistence
+// ═══════════════════════════════════════════════════════════
+
+const STATE = {
+currentLocation: 'TJRV',
+currentSection: 'climatology',
+currentCycle: '12Z',
+currentLevel: '500mb',
+currentModelProduct: 'deterministic',
+locations: ['TJRV', 'SVMI'],
+searchQuery: '',
+compareImages: {},
+uploadedImages: {}, // key: loc_section_cardId → dataURL
+analysisNotes: {}, // key: loc_section_fieldId → text
+archiveRows: {}, // key: loc → [{...}]
+stoplightData: {}, // key: loc → [{...}]
+timelineRisks: {}, // key: loc_day → 'g'|'a'|'r'
+loginUser: null,
+};
+
+// ── PERSISTENCE ─────────────────────────────────────────
+function saveState() {
+try {
+const toSave = {
+uploadedImages: STATE.uploadedImages,
+analysisNotes: STATE.analysisNotes,
+archiveRows: STATE.archiveRows,
+stoplightData: STATE.stoplightData,
+timelineRisks: STATE.timelineRisks,
+locations: STATE.locations,
+};
+localStorage.setItem('var_opws_state', JSON.stringify(toSave));
+} catch(e) { console.warn('Save failed (storage full?)', e); }
+}
+
+function loadState() {
+try {
+const raw = localStorage.getItem('var_opws_state');
+if (!raw) return;
+const saved = JSON.parse(raw);
+Object.assign(STATE, saved);
+} catch(e) { console.warn('Load state failed', e); }
+}
+
+// ── IMAGE HELPERS ────────────────────────────────────────
+function getImageKey(loc, section, cardId) {
+return `${loc}__${section}__${cardId}`;
+}
+function getImage(loc, section, cardId) {
+return STATE.uploadedImages[getImageKey(loc, section, cardId)] || null;
+}
+function setImage(loc, section, cardId, dataURL) {
+STATE.uploadedImages[getImageKey(loc, section, cardId)] = dataURL;
+saveState();
+}
+function clearImage(loc, section, cardId) {
+delete STATE.uploadedImages[getImageKey(loc, section, cardId)];
+saveState();
+}
+
+// ── NOTES HELPERS ────────────────────────────────────────
+function getNoteKey(loc, section, fieldId) {
+return `${loc}__${section}__${fieldId}`;
+}
+function getNote(loc, section, fieldId) {
+return STATE.analysisNotes[getNoteKey(loc, section, fieldId)] || '';
+}
+function setNote(loc, section, fieldId, text) {
+STATE.analysisNotes[getNoteKey(loc, section, fieldId)] = text;
+saveState();
+}
+
+// ── ARCHIVE HELPERS ──────────────────────────────────────
+function getArchive(loc) {
+if (!STATE.archiveRows[loc]) {
+STATE.archiveRows[loc] = defaultArchiveRows();
+}
+return STATE.archiveRows[loc];
+}
+function setArchive(loc, rows) {
+STATE.archiveRows[loc] = rows;
+saveState();
+}
+function defaultArchiveRows() {
+return [
+{ id: 1, date: '2025-01-01', cycle: '00Z', section: 'climatology', version: 'v1.0', analyst: '', notes: '', locked: false },
+];
+}
+
+// ── STOPLIGHT HELPERS ────────────────────────────────────
+function getStoplight(loc) {
+if (!STATE.stoplightData[loc]) {
+STATE.stoplightData[loc] = defaultStoplight();
+}
+return STATE.stoplightData[loc];
+}
+function setStoplight(loc, data) {
+STATE.stoplightData[loc] = data;
+saveState();
+}
+function defaultStoplight() {
+return [
+{ threat: 'Low-Level Turbulence', air: 'a', isr: 'g', maritime: 'g', ground: 'g', remarks: '' },
+{ threat: 'Convective Activity / CBs', air: 'r', isr: 'r', maritime: 'a', ground: 'a', remarks: '' },
+{ threat: 'Icing (FL100–FL200)', air: 'a', isr: 'a', maritime: 'g', ground: 'g', remarks: '' },
+{ threat: 'Low Visibility / Fog', air: 'r', isr: 'r', maritime: 'a', ground: 'a', remarks: '' },
+{ threat: 'High Surface Winds', air: 'a', isr: 'g', maritime: 'r', ground: 'a', remarks: '' },
+{ threat: 'High Upper Winds (≥100kts)', air: 'a', isr: 'a', maritime: 'g', ground: 'g', remarks: '' },
+{ threat: 'IR Degradation', air: 'g', isr: 'r', maritime: 'g', ground: 'g', remarks: '' },
+{ threat: 'Radar Degradation', air: 'g', isr: 'r', maritime: 'a', ground: 'g', remarks: '' },
+];
+}
+
+// ── TIMELINE RISK ────────────────────────────────────────
+function getTimelineRisk(loc, day) {
+return STATE.timelineRisks[`${loc}__${day}`] || '';
+}
+function setTimelineRisk(loc, day, risk) {
+STATE.timelineRisks[`${loc}__${day}`] = risk;
+saveState();
+}
+
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// UI.JS — Reusable UI helpers & component builders
+// ═══════════════════════════════════════════════════════════
+
+// ── CLOCK ────────────────────────────────────────────────
+function startClock() {
+function tick() {
+const now = new Date();
+const pad = n => n.toString().padStart(2, '0');
+const utcH = pad(now.getUTCHours());
+const utcM = pad(now.getUTCMinutes());
+const utcS = pad(now.getUTCSeconds());
+document.getElementById('clockUTC').textContent = `${utcH}:${utcM}:${utcS}Z`;
+const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const d = String(now.getUTCDate()).padStart(2,'0');
+const m = months[now.getUTCMonth()];
+const y = now.getUTCFullYear();
+document.getElementById('clockDate').textContent = `${d} ${m} ${y}`;
+}
+tick();
+setInterval(tick, 1000);
+}
+
+// ── TOAST ────────────────────────────────────────────────
+function showToast(msg, duration = 2500) {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.classList.remove('hidden');
+clearTimeout(t._timer);
+t._timer = setTimeout(() => t.classList.add('hidden'), duration);
+}
+
+// ── UPLOAD ZONE ──────────────────────────────────────────
+function buildUploadZone(loc, section, cardId, opts = {}) {
+const { label = '', allowGif = true, showCompare = false } = opts;
+const existing = getImage(loc, section, cardId);
+const zoneId = `uz-${loc}-${section}-${cardId}`.replace(/[^a-z0-9-]/gi, '_');
+
+const isGif = existing && existing.startsWith('data:image/gif');
+
+const html = `
+<div class="upload-zone ${existing ? 'has-content' : ''}" id="${zoneId}"
+ondragover="handleDragOver(event, '${zoneId}')"
+ondragleave="handleDragLeave('${zoneId}')"
+ondrop="handleDrop(event, '${loc}', '${section}', '${cardId}', '${zoneId}')">
+${existing
+? `<img src="${existing}" class="${isGif ? 'upload-gif' : 'upload-preview'}" alt="${label}" data-caption="${label}"/>`
+: `<div class="upload-icon">⬆</div>
+<div class="upload-text"><strong>DRAG & DROP</strong><br/>or click to upload<br/>${allowGif ? 'PNG · JPG · GIF' : 'PNG · JPG'}</div>`
+}
+<input type="file" accept="${allowGif ? 'image/*,.gif' : 'image/png,image/jpeg'}"
+onchange="handleFileInput(event, '${loc}', '${section}', '${cardId}', '${zoneId}')"/>
+</div>
+<div class="upload-controls">
+${existing ? `
+<button class="card-btn" onclick="openLightbox('${zoneId}', '${label}')">⊞ EXPAND</button>
+<button class="card-btn danger" onclick="removeUpload('${loc}', '${section}', '${cardId}', '${zoneId}')">✕ CLEAR</button>
+${showCompare ? `<button class="card-btn" onclick="toggleCompare('${loc}', '${section}', '${cardId}', '${label}')">⊟ COMPARE</button>` : ''}
+` : ''}
+</div>`;
+return html;
+}
+
+// ── ANALYSIS TEXTAREA ────────────────────────────────────
+function buildAnalysisField(loc, section, fieldId, placeholder = 'Enter analyst discussion...') {
+const val = getNote(loc, section, fieldId);
+const id = `af-${loc}-${section}-${fieldId}`.replace(/[^a-z0-9-]/gi, '_');
+return `
+<span class="analysis-label">ANALYST DISCUSSION</span>
+<textarea class="analysis-field" id="${id}" placeholder="${placeholder}"
+onchange="handleNoteChange('${loc}', '${section}', '${fieldId}', this.value)"
+oninput="handleNoteChange('${loc}', '${section}', '${fieldId}', this.value)"
+>${escapeHtml(val)}</textarea>`;
+
+}
+
+// ── DISCUSSION NOTES ─────────────────────────────────────
+function buildDiscussionNotes(loc, section, fieldId) {
+const val = getNote(loc, section, `disc_${fieldId}`);
+const id = `dn-${fieldId}`.replace(/[^a-z0-9-]/gi, ‘_’);
+return ` <div class="discussion-wrap"> <div class="discussion-toggle" onclick="toggleDiscussion('${id}')"> <span id="disc-chev-${id}">▶</span> COLLAPSIBLE DISCUSSION NOTES </div> <div class="discussion-body hidden" id="disc-body-${id}"> <textarea class="discussion-field" placeholder="Extended discussion notes, model comparison, uncertainty..." onchange="handleNoteChange('${loc}', '${section}', 'disc_${fieldId}', this.value)" oninput="handleNoteChange('${loc}', '${section}', 'disc_${fieldId}', this.value)" >${escapeHtml(val)}</textarea> </div> </div>`;
+}
+
+// ── COLLAPSIBLE ───────────────────────────────────────────
+function buildCollapsible(id, num, title, badge, content, defaultOpen = true) {
+return `<div class="collapsible ${defaultOpen ? '' : 'collapsed'}" id="coll-${id}"> <div class="collapsible-header" onclick="toggleCollapsible('coll-${id}')"> <div class="collapsible-left"> <span class="collapsible-num">${num}</span> <span class="collapsible-title">${title}</span> ${badge ?`<span class="collapsible-badge">${badge}</span>` : ''} </div> <div class="collapsible-right"> <span class="chevron ${defaultOpen ? 'open' : ''}" id="chev-${id}">▶</span> </div> </div> <div class="collapsible-body">${content}</div> </div>`;
+}
+
+// ── CARD ──────────────────────────────────────────────────
+function buildCard(title, content, actions = ‘’) {
+return ` <div class="card fade-in"> <div class="card-head"> <span class="card-title">${title}</span> <div class="card-actions">${actions}</div> </div> <div class="card-body">${content}</div> </div>`;
+}
+
+// ── UPLOAD CARD ───────────────────────────────────────────
+function buildUploadCard(loc, section, cardId, title, opts = {}) {
+const content = `${buildUploadZone(loc, section, cardId, { label: title, ...opts })} ${buildAnalysisField(loc, section,`ana_${cardId}`, opts.placeholder || `Enter ${title.toLowerCase()} analysis…`)} ${opts.discussion ? buildDiscussionNotes(loc, section, cardId) : ''} `;
+return buildCard(title, content);
+}
+
+// ── PAGE HEADER ───────────────────────────────────────────
+function buildPageHeader(title, subtitle, chips = []) {
+return `<div class="page-header"> <div class="page-header-inner"> <div> <div class="page-title">${title}</div> <div class="page-subtitle">${subtitle}</div> </div> </div> ${chips.length ?`<div class="page-meta">${chips.map(c => `<span class="meta-chip ${c.active ? 'active' : ''}">${c.label}</span>`).join(’’)}</div>` : ''} </div>`;
+}
+
+// ── STOPLIGHT LIGHT CELL ─────────────────────────────────
+function lightCell(val, stateKey, loc, rowIdx, col) {
+const map = { g: ‘GREEN’, a: ‘AMBER’, r: ‘RED’ };
+return `<td> <select onchange="updateStoplight('${loc}', ${rowIdx}, '${col}', this.value)" class="${val}"> ${['g','a','r'].map(v =>`<option value=”${v}” ${val===v?‘selected’:’’}>${map[v]}</option>`).join('')} </select> </td>`;
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function escapeHtml(s) {
+if (!s) return ‘’;
+return s.replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
+}
+
+function toggleCollapsible(id) {
+const el = document.getElementById(id);
+el.classList.toggle(‘collapsed’);
+const chevId = id.replace(‘coll-’, ‘chev-’);
+const ch = document.getElementById(chevId);
+if (ch) ch.classList.toggle(‘open’);
+}
+
+function toggleDiscussion(id) {
+const body = document.getElementById(`disc-body-${id}`);
+const chev = document.getElementById(`disc-chev-${id}`);
+if (!body) return;
+body.classList.toggle(‘hidden’);
+if (chev) chev.textContent = body.classList.contains(‘hidden’) ? ‘▶’ : ‘▼’;
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────
+function handleDragOver(e, zoneId) {
+e.preventDefault();
+document.getElementById(zoneId)?.classList.add(‘drag-over’);
+}
+function handleDragLeave(zoneId) {
+document.getElementById(zoneId)?.classList.remove(‘drag-over’);
+}
+function handleDrop(e, loc, section, cardId, zoneId) {
+e.preventDefault();
+handleDragLeave(zoneId);
+const file = e.dataTransfer?.files?.[0];
+if (file) processFile(file, loc, section, cardId, zoneId);
+}
+function handleFileInput(e, loc, section, cardId, zoneId) {
+const file = e.target.files?.[0];
+if (file) processFile(file, loc, section, cardId, zoneId);
+}
+
+function processFile(file, loc, section, cardId, zoneId) {
+if (!file.type.startsWith(‘image/’)) { showToast(‘⚠ File must be an image’); return; }
+const reader = new FileReader();
+reader.onload = ev => {
+setImage(loc, section, cardId, ev.target.result);
+// Rebuild just this zone
+const zone = document.getElementById(zoneId);
+if (!zone) return;
+const isGif = file.type === ‘image/gif’;
+zone.classList.add(‘has-content’);
+zone.innerHTML = `<img src="${ev.target.result}" class="${isGif ? 'upload-gif' : 'upload-preview'}" alt="${cardId}"/> <input type="file" accept="image/*,.gif" onchange="handleFileInput(event, '${loc}', '${section}', '${cardId}', '${zoneId}')"/>`;
+// Re-add controls
+const controls = zone.nextElementSibling;
+if (controls && controls.classList.contains(‘upload-controls’)) {
+controls.innerHTML = `<button class="card-btn" onclick="openLightbox('${zoneId}', '${cardId}')">⊞ EXPAND</button> <button class="card-btn danger" onclick="removeUpload('${loc}', '${section}', '${cardId}', '${zoneId}')">✕ CLEAR</button> <button class="card-btn" onclick="toggleCompare('${loc}', '${section}', '${cardId}', '${cardId}')">⊟ COMPARE</button>`;
+}
+showToast(‘✓ Image uploaded’);
+};
+reader.readAsDataURL(file);
+}
+
+function removeUpload(loc, section, cardId, zoneId) {
+clearImage(loc, section, cardId);
+const zone = document.getElementById(zoneId);
+if (!zone) return;
+zone.classList.remove(‘has-content’);
+zone.innerHTML = `<div class="upload-icon">⬆</div> <div class="upload-text"><strong>DRAG & DROP</strong><br/>or click to upload<br/>PNG · JPG · GIF</div> <input type="file" accept="image/*,.gif" onchange="handleFileInput(event, '${loc}', '${section}', '${cardId}', '${zoneId}')"/>`;
+const controls = zone.nextElementSibling;
+if (controls && controls.classList.contains(‘upload-controls’)) controls.innerHTML = ‘’;
+showToast(‘Image cleared’);
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────
+function openLightbox(zoneId, caption) {
+const zone = document.getElementById(zoneId);
+const img = zone?.querySelector(‘img’);
+if (!img) return;
+document.getElementById(‘lightboxImg’).src = img.src;
+document.getElementById(‘lightboxCaption’).textContent = caption || ‘’;
+document.getElementById(‘lightbox’).classList.remove(‘hidden’);
+document.addEventListener(‘keydown’, lightboxKeyHandler);
+}
+function closeLightbox() {
+document.getElementById(‘lightbox’).classList.add(‘hidden’);
+document.removeEventListener(‘keydown’, lightboxKeyHandler);
+}
+function lightboxKeyHandler(e) { if (e.key === ‘Escape’) closeLightbox(); }
+
+// ── COMPARE ───────────────────────────────────────────────
+function toggleCompare(loc, section, cardId, label) {
+const key = getImageKey(loc, section, cardId);
+const src = getImage(loc, section, cardId);
+if (!src) { showToast(‘No image to compare’); return; }
+if (STATE.compareImages[key]) {
+delete STATE.compareImages[key];
+showToast(‘Removed from comparison’);
+} else {
+STATE.compareImages[key] = { src, label, loc, section, cardId };
+showToast(‘Added to comparison’);
+}
+}
+function openCompare() {
+const items = Object.values(STATE.compareImages);
+if (items.length < 2) { showToast(‘Add at least 2 images for comparison’); return; }
+const grid = document.getElementById(‘compareGrid’);
+grid.innerHTML = items.map(it => ` <div class="compare-item"> <div class="compare-item-title">${it.label} — ${it.loc}</div> <img src="${it.src}" alt="${it.label}"/> </div>`).join(’’);
+document.getElementById(‘compareModal’).classList.remove(‘hidden’);
+}
+function closeCompare() {
+document.getElementById(‘compareModal’).classList.add(‘hidden’);
+}
+
+// ── NOTE CHANGE ───────────────────────────────────────────
+function handleNoteChange(loc, section, fieldId, value) {
+setNote(loc, section, fieldId, value);
+}
+
+// ── SEARCH ───────────────────────────────────────────────
+function handleSearch(q) {
+STATE.searchQuery = q.trim().toLowerCase();
+const clearBtn = document.getElementById(‘searchClear’);
+if (STATE.searchQuery) clearBtn.classList.add(‘visible’); else clearBtn.classList.remove(‘visible’);
+applySearch();
+}
+function clearSearch() {
+document.getElementById(‘globalSearch’).value = ‘’;
+handleSearch(’’);
+}
+function applySearch() {
+const q = STATE.searchQuery;
+if (!q) {
+document.querySelectorAll(’.collapsible’).forEach(el => { el.style.display = ‘’; });
+document.querySelectorAll(’.card’).forEach(el => { el.style.display = ‘’; });
+return;
+}
+document.querySelectorAll(’.collapsible’).forEach(el => {
+const text = el.textContent.toLowerCase();
+el.style.display = text.includes(q) ? ‘’ : ‘none’;
+if (text.includes(q)) el.classList.remove(‘collapsed’);
+});
+document.querySelectorAll(’.card’).forEach(el => {
+const text = el.textContent.toLowerCase();
+el.style.display = text.includes(q) ? ‘’ : ‘none’;
+});
+}
+
+// ── STOPLIGHT ─────────────────────────────────────────────
+function updateStoplight(loc, rowIdx, col, val) {
+const data = getStoplight(loc);
+data[rowIdx][col] = val;
+setStoplight(loc, data);
+// Update cell color class
+const select = event.target;
+select.className = val;
+}
+
+// ── LEVEL TABS ─────────────────────────────────────────────
+function switchLevel(level, containerId) {
+document.querySelectorAll(`#${containerId} .level-tab`).forEach(t => t.classList.toggle(‘active’, t.dataset.level === level));
+document.querySelectorAll(`#${containerId} .level-pane`).forEach(p => p.classList.toggle(‘hidden’, p.dataset.level !== level));
+}
+
+// ── MODEL PRODUCT TABS ────────────────────────────────────
+function switchModelProduct(prod, containerId) {
+document.querySelectorAll(`#${containerId} .model-product-tab`).forEach(t => t.classList.toggle(‘active’, t.dataset.prod === prod));
+document.querySelectorAll(`#${containerId} .model-pane`).forEach(p => p.classList.toggle(‘hidden’, p.dataset.prod !== prod));
+}
+
+// ── TIMELINE RISK ─────────────────────────────────────────
+function setDayRisk(loc, day, risk) {
+setTimelineRisk(loc, day, risk);
+[‘grn’,‘amb’,‘red’].forEach(cls => {
+const map = { grn: ‘g’, amb: ‘a’, red: ‘r’ };
+document.getElementById(`trisk-${day}-${cls}`)?.classList.toggle(‘on’, map[cls] === risk);
+});
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// SECTIONS.JS — Individual section page HTML builders
+// ═══════════════════════════════════════════════════════════
+
+// ── CLIMATOLOGY ───────────────────────────────────────────
+function buildClimatology(loc) {
+const L = loc;
+const S = ‘climatology’;
+const items = [
+{ id: ‘monthly’, num: ‘01’, title: ‘MONTHLY AVERAGES’, badge: ‘CLIMO’, ph: ‘Describe monthly temperature, precipitation, and wind averages…’ },
+{ id: ‘seasonal’, num: ‘02’, title: ‘SEASONAL WIND PATTERNS’, badge: ‘SYNOPTIC’, ph: ‘Describe dominant seasonal wind regimes, trade winds, monsoon influence…’ },
+{ id: ‘precip’, num: ‘03’, title: ‘PRECIPITATION NORMALS’, badge: ‘HYDRO’, ph: ‘Describe annual precipitation distribution, wet/dry seasons, extremes…’ },
+{ id: ‘tropical’, num: ‘04’, title: ‘TROPICAL CYCLONE CLIMATOLOGY’, badge: ‘TROP’, ph: ‘Describe TC tracks, frequency, historical landfalls, peak season…’ },
+{ id: ‘hse’, num: ‘05’, title: ‘HISTORICAL SIGNIFICANT EVENTS’, badge: ‘ARCHIVE’, ph: ‘Describe notable historical weather events, records, extremes…’ },
+{ id: ‘enso’, num: ‘06’, title: ‘ENSO INFLUENCES’, badge: ‘ENSO’, ph: ‘Describe El Niño and La Niña impacts on local climate patterns…’ },
+];
+
+return buildPageHeader(‘CLIMATOLOGY’, `HISTORICAL CLIMATE ANALYSIS — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: CLIMO’ },
+{ label: `CYCLE: ${STATE.currentCycle}` },
+]) + items.map(it => buildCollapsible(
+`${L}_${it.id}`,
+it.num,
+it.title,
+it.badge,
+`<div class="grid-2"> ${buildUploadZone(L, S, it.id, { label: it.title })} <div> ${buildAnalysisField(L, S, `ana_${it.id}`, it.ph)} ${buildDiscussionNotes(L, S, it.id)} </div> </div>`
+)).join(’’);
+}
+
+// ── OBSERVATIONS ──────────────────────────────────────────
+function buildObservations(loc) {
+const L = loc;
+const S = ‘observations’;
+
+const items = [
+{ id: ‘meteogram’, num: ‘01’, title: ‘METEOGRAM’, badge: ‘OBS’, gif: false, ph: ‘Discuss meteogram trends, QPF accumulations, wind evolution…’ },
+{ id: ‘surface_obs’,num:‘02’, title: ‘SURFACE OBSERVATIONS’, badge: ‘METAR’, gif: false, ph: ‘Discuss METAR/SYNOP analysis, surface pressure patterns, fronts…’ },
+{ id: ‘skewt’, num: ‘03’, title: ‘OBSERVED SKEW-T’, badge: ‘SOUNDING’, gif: false, ph: ‘Discuss thermodynamic profile, instability indices, moisture…’ },
+{ id: ‘sat_vis’, num: ‘04’, title: ‘SATELLITE — VIS’, badge: ‘SAT’, gif: true, ph: ‘Discuss visible satellite features, cloud morphology, optical depth…’ },
+{ id: ‘sat_ir’, num: ‘05’, title: ‘SATELLITE — IR’, badge: ‘SAT’, gif: true, ph: ‘Discuss IR temperatures, convective tops, cirrus shields…’ },
+{ id: ‘sat_wv’, num: ‘06’, title: ‘SATELLITE — WATER VAPOR’, badge: ‘SAT’, gif: true, ph: ‘Discuss WV channel features, upper-level dynamics, jet stream…’ },
+{ id: ‘radar’, num: ‘07’, title: ‘RADAR LOOPS’, badge: ‘RADAR’, gif: true, ph: ‘Discuss radar reflectivity patterns, precipitation type, coverage…’ },
+{ id: ‘lightning’, num: ‘08’, title: ‘LIGHTNING’, badge: ‘LGHT’, gif: true, ph: ‘Discuss lightning density, CG flash rate, convective cells…’ },
+];
+
+return buildPageHeader(‘OBSERVATIONS’, `CURRENT CONDITIONS & LOOP ANALYSIS — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: OBS’ },
+]) + items.map(it => buildCollapsible(
+`${L}_obs_${it.id}`,
+it.num,
+it.title,
+it.badge,
+`<div class="grid-2"> ${buildUploadZone(L, S, it.id, { label: it.title, allowGif: it.gif })} <div> ${buildAnalysisField(L, S, `ana_${it.id}`, it.ph)} ${buildDiscussionNotes(L, S, it.id)} </div> </div>`
+)).join(’’);
+}
+
+// ── UPPER AIR ─────────────────────────────────────────────
+function buildUpperAir(loc) {
+const L = loc;
+const S = ‘upper-air’;
+const levels = [‘300mb’, ‘500mb’, ‘700mb’, ‘850mb’, ‘Surface’];
+const levelLabels = { ‘300mb’: ‘300 MB’, ‘500mb’: ‘500 MB’, ‘700mb’: ‘700 MB’, ‘850mb’: ‘850 MB’, ‘Surface’: ‘SURFACE’ };
+const levelDesc = {
+‘300mb’: ‘jet stream, divergence, wind maxima’,
+‘500mb’: ‘mid-level trough/ridge, height anomalies’,
+‘700mb’: ‘mid-level moisture, thermal advection’,
+‘850mb’: ‘low-level jet, moisture flux, warm advection’,
+‘Surface’: ‘surface pressure, fronts, convergence zones’,
+};
+const containerId = `ua-container-${L}`;
+
+const levelTabs = levels.map((lv, i) =>
+`<button class="level-tab ${i===0?'active':''}" data-level="${lv}" onclick="switchLevel('${lv}', '${containerId}')">${levelLabels[lv]}</button>`
+).join(’’);
+
+const panes = levels.map((lv, i) => `<div class="level-pane ${i===0?'':'hidden'}" data-level="${lv}"> ${buildCollapsible(`${L}*ua_ana*${lv}`, '', `${levelLabels[lv]} — ANALYSIS CHART`, 'ANALYSIS', `<div class="grid-2">
+${buildUploadZone(L, S, `ua_${lv}`, { label: `${levelLabels[lv]} Analysis`, showCompare: true })}
+<div>
+${buildAnalysisField(L, S, `ua_ana_${lv}`, `Discuss ${levelDesc[lv]}...`)}
+${buildDiscussionNotes(L, S, `ua_${lv}`)}
+</div>
+</div>` )} </div>`).join(’’);
+
+return buildPageHeader(‘UPPER AIR ANALYSIS’, `SYNOPTIC-SCALE PATTERN ANALYSIS — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: UPPER AIR’ },
+]) + ` <div class="card fade-in"> <div class="card-head"> <span class="card-title">PRESSURE LEVEL SELECTOR</span> <button class="card-btn" onclick="openCompare()">⊟ OPEN COMPARE VIEW</button> </div> <div class="card-body"> <div class="level-tabs">${levelTabs}</div> <div id="${containerId}">${panes}</div> </div> </div>`;
+}
+
+// ── MODEL GUIDANCE ────────────────────────────────────────
+function buildModelGuidance(loc) {
+const L = loc;
+const S = ‘model-guidance’;
+const levels = [‘300mb’, ‘500mb’, ‘700mb’, ‘850mb’, ‘Surface’];
+const products = [
+{ id: ‘deterministic’, label: ‘DETERMINISTIC’ },
+{ id: ‘ensemble’, label: ‘ENSEMBLE’ },
+{ id: ‘cape’, label: ‘CAPE’ },
+{ id: ‘pwat’, label: ‘PWAT’ },
+{ id: ‘vvel’, label: ‘VERT. VELOCITY’ },
+{ id: ‘wind’, label: ‘WIND FIELDS’ },
+{ id: ‘qpf’, label: ‘QPF’ },
+{ id: ‘thickness’, label: ‘THICKNESS’ },
+];
+
+const lvlContId = `mg-lvl-${L}`;
+const prodContId = `mg-prod-${L}`;
+
+const levelTabs = levels.map((lv, i) =>
+`<button class="level-tab ${i===0?'active':''}" data-level="${lv}" onclick="switchLevel('${lv}', '${lvlContId}')">${lv}</button>`
+).join(’’);
+
+const levelPanes = levels.map((lv, i) => {
+const prodTabs = products.map((p, j) =>
+`<button class="model-product-tab ${j===0?'active':''}" data-prod="${p.id}" onclick="switchModelProduct('${p.id}', 'mg-inner-${L}-${lv}')">${p.label}</button>`
+).join(’’);
+const prodPanes = products.map((p, j) => `<div class="model-pane ${j===0?'':'hidden'}" data-prod="${p.id}"> <div class="grid-2"> ${buildUploadZone(L, S,`mg_${lv}*${p.id}`, { label: `${lv} — ${p.label}`, showCompare: true })} <div> ${buildAnalysisField(L, S, `mg*${lv}*${p.id}`, `Discuss ${p.label.toLowerCase()} at ${lv}…`)} ${buildDiscussionNotes(L, S, `mg*${lv}_${p.id}`)} </div> </div> </div>`).join(’’);
+
+```
+return `
+<div class="level-pane ${i===0?'':'hidden'}" data-level="${lv}">
+<div class="model-product-tabs" id="mg-ptabs-${L}-${lv}">${prodTabs}</div>
+<div id="mg-inner-${L}-${lv}">${prodPanes}</div>
+</div>`;
+```
+
+}).join(’’);
+
+return buildPageHeader(‘MODEL GUIDANCE’, `NWP ANALYSIS — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: MODEL’ },
+{ label: `CYCLE: ${STATE.currentCycle}` },
+]) + ` <div class="card fade-in"> <div class="card-head"> <span class="card-title">PRESSURE LEVEL / PRODUCT SELECTOR</span> <div class="card-actions"> <button class="card-btn" onclick="openCompare()">⊟ COMPARE VIEW</button> </div> </div> <div class="card-body"> <div class="level-tabs">${levelTabs}</div> <div id="${lvlContId}">${levelPanes}</div> </div> </div>`;
+}
+
+// ── INTEGRATED ASSESSMENT ─────────────────────────────────
+function buildIntegrated(loc) {
+const L = loc;
+const S = ‘integrated’;
+
+// Threat Assessment section
+const threatContent = `${buildUploadZone(L, S, 'threat_chart', { label: 'Threat Summary Chart' })} ${buildAnalysisField(L, S, 'threat_main', 'Describe primary weather threats, confidence levels, and key uncertainties...')}`;
+
+// Asset impacts
+const assets = [‘Air’, ‘ISR’, ‘Maritime’, ‘Ground’];
+const assetContent = `<table class="asset-table"> <thead><tr> <th>ASSET</th> <th>WEATHER PARAMETER</th> <th>IMPACT</th> <th>MITIGATION</th> </tr></thead> <tbody> ${assets.map(a =>`
+<tr>
+<td style="padding:8px 12px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap">${a.toUpperCase()}</td>
+<td><textarea class="asset-table" style="width:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:8px;resize:none;min-height:55px;line-height:1.5"
+onchange="handleNoteChange('${L}','${S}','asset_param_${a}',this.value)"
+placeholder="Weather parameters..."
+>${escapeHtml(getNote(L,S,`asset_param_${a}`))}</textarea></td>
+<td><textarea style="width:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:8px;resize:none;min-height:55px;line-height:1.5"
+onchange="handleNoteChange('${L}','${S}','asset_impact_${a}',this.value)"
+placeholder="Operational impacts..."
+>${escapeHtml(getNote(L,S,`asset_impact_${a}`))}</textarea></td>
+<td><textarea style="width:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:8px;resize:none;min-height:55px;line-height:1.5"
+onchange="handleNoteChange('${L}','${S}','asset_mitig_${a}',this.value)"
+placeholder="Recommended mitigation..."
+>${escapeHtml(getNote(L,S,`asset_mitig_${a}`))}</textarea></td>
+</tr>`).join('')} </tbody> </table>`;
+
+// IR/Radar degradation
+const irContent = ` <div class="grid-2"> ${buildUploadZone(L, S, 'ir_deg', { label: 'IR Degradation Chart' })} <div>${buildAnalysisField(L, S, 'ir_deg_notes', 'Describe cloud cover, optical depth, and IR sensor degradation impacts on ISR and targeting...')}</div> </div>`;
+const radarContent = ` <div class="grid-2"> ${buildUploadZone(L, S, 'radar_deg', { label: 'Radar Degradation Chart' })} <div>${buildAnalysisField(L, S, 'radar_deg_notes', 'Describe precipitation attenuation, ground clutter, anomalous propagation impacts on radar coverage...')}</div> </div>`;
+
+// Stoplight matrix
+const stopData = getStoplight(L);
+const stoplightContent = `<div style="overflow-x:auto"> <table class="stoplight-table"> <thead><tr> <th style="min-width:200px">WEATHER THREAT</th> <th>AIR</th> <th>ISR</th> <th>MARITIME</th> <th>GROUND</th> <th style="min-width:200px">REMARKS</th> </tr></thead> <tbody> ${stopData.map((row, i) =>`
+<tr>
+<td><input value="${escapeHtml(row.threat)}" onchange="updateStoplightThreat('${L}',${i},this.value)" style="width:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:4px"/></td>
+${[‘air’,‘isr’,‘maritime’,‘ground’].map(col => lightCell(row[col], ‘’, L, i, col)).join(’’)}
+<td><input value="${escapeHtml(row.remarks)}" onchange="updateStoplightRemarks('${L}',${i},this.value)" placeholder="Add remarks..." style="width:100%;background:transparent;border:none;outline:none;color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;padding:4px"/></td>
+</tr>`).join('')} </tbody> </table> </div> <div style="margin-top:10px;display:flex;gap:12px"> <span style="font-family:var(--font-mono);font-size:10px" class="g">■ GREEN = Minimal Impact</span> <span style="font-family:var(--font-mono);font-size:10px" class="a">■ AMBER = Moderate Impact</span> <span style="font-family:var(--font-mono);font-size:10px" class="r">■ RED = Significant Impact</span> </div>`;
+
+// D-5 through D-0 timeline
+const days = [
+{ key: ‘D5’, label: ‘D-5’ },
+{ key: ‘D4’, label: ‘D-4’ },
+{ key: ‘D3’, label: ‘D-3’ },
+{ key: ‘D2’, label: ‘D-2’ },
+{ key: ‘D1’, label: ‘D-1’ },
+{ key: ‘D0’, label: ‘D-0’ },
+];
+const timelineContent = `<div class="timeline"> ${days.map(d => { const risk = getTimelineRisk(L, d.key); const noteVal = getNote(L, S,`timeline_${d.key}`); return `
+<div class="timeline-day">
+<div class="timeline-day-head">
+<div class="timeline-day-label">${d.label}</div>
+</div>
+<div class="timeline-day-body">
+<textarea class="timeline-field" placeholder="Wx summary..."
+onchange="handleNoteChange('${L}','${S}','timeline_${d.key}',this.value)"
+>${escapeHtml(noteVal)}</textarea>
+</div>
+<div class="timeline-risk">
+<button class="timeline-risk-btn grn ${risk==='g'?'on':''}" id="trisk-${d.key}-grn" onclick="setDayRisk('${L}','${d.key}','g')" title="Green"></button>
+<button class="timeline-risk-btn amb ${risk==='a'?'on':''}" id="trisk-${d.key}-amb" onclick="setDayRisk('${L}','${d.key}','a')" title="Amber"></button>
+<button class="timeline-risk-btn red ${risk==='r'?'on':''}" id="trisk-${d.key}-red" onclick="setDayRisk('${L}','${d.key}','r')" title="Red"></button>
+</div>
+</div>`; }).join('')} </div>`;
+
+return buildPageHeader(‘INTEGRATED ASSESSMENT’, `SYNTHESIZED OPERATIONAL WEATHER ASSESSMENT — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: INTEGRATED’ },
+]) + [
+buildCollapsible(`${L}_int_threat`, ‘01’, ‘THREAT ASSESSMENT’, ‘PRIMARY’, threatContent),
+buildCollapsible(`${L}_int_assets`, ‘02’, ‘WEATHER IMPACTS TO ASSETS’, ‘ALL DOMAINS’, assetContent),
+buildCollapsible(`${L}_int_ir`, ‘03’, ‘IR DEGRADATION IMPACTS’, ‘ISR/EO’, irContent),
+buildCollapsible(`${L}_int_radar`, ‘04’, ‘RADAR DEGRADATION IMPACTS’, ‘RADAR’, radarContent),
+buildCollapsible(`${L}_int_stop`, ‘05’, ‘STOPLIGHT RISK MATRIX’, ‘RISK’, stoplightContent),
+buildCollapsible(`${L}_int_time`, ‘06’, ‘D-5 THROUGH D-0 FORECAST TIMELINE’, ‘TIMELINE’, timelineContent),
+].join(’’);
+}
+
+// ── ARCHIVE ───────────────────────────────────────────────
+function buildArchive(loc) {
+const L = loc;
+const cycles = [‘00Z’,‘06Z’,‘12Z’,‘18Z’];
+const sections = [‘climatology’,‘observations’,‘upper-air’,‘model-guidance’,‘integrated’];
+
+const rows = getArchive(L);
+
+const tableRows = rows.map((row, i) => `<tr> <td><input type="date" value="${row.date}" onchange="updateArchiveRow('${L}',${i},'date',this.value)" style="background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;width:130px"/></td> <td> <select onchange="updateArchiveRow('${L}',${i},'cycle',this.value)" style="background:transparent;border:none;outline:none;color:var(--accent);font-family:var(--font-mono);font-size:11px;cursor:pointer"> ${cycles.map(c =>`<option value=”${c}” ${row.cycle===c?‘selected’:’’}>${c}</option>`).join('')} </select> </td> <td> <select onchange="updateArchiveRow('${L}',${i},'section',this.value)" style="background:transparent;border:none;outline:none;color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;cursor:pointer"> ${sections.map(s => `<option value=”${s}” ${row.section===s?‘selected’:’’}>${s.toUpperCase()}</option>`).join('')} </select> </td> <td><span class="version-badge">${row.version||'v1.0'}</span></td> <td><input value="${escapeHtml(row.analyst)}" onchange="updateArchiveRow('${L}',${i},'analyst',this.value)" placeholder="Analyst ID" style="background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-mono);font-size:11px;width:100px"/></td> <td><input value="${escapeHtml(row.notes)}" onchange="updateArchiveRow('${L}',${i},'notes',this.value)" placeholder="Brief notes..." style="background:transparent;border:none;outline:none;color:var(--text-secondary);font-family:var(--font-mono);font-size:11px;width:100%"/></td> <td> <button class="card-btn danger" onclick="deleteArchiveRow('${L}',${i})">✕</button> </td> </tr>`).join(’’);
+
+return buildPageHeader(‘ARCHIVE’, `FORECAST CYCLE ARCHIVE — ${loc}`, [
+{ label: `ICAO: ${loc}`, active: true },
+{ label: ‘SECTION: ARCHIVE’ },
+]) + ` <div class="archive-filters"> <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">FILTER BY CYCLE:</span> <select class="filter-select" onchange="filterArchive('${L}','cycle',this.value)" style="background:var(--bg-card);border:1px solid var(--border-dim);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:5px 8px;border-radius:3px;outline:none"> <option value="all">ALL CYCLES</option> ${cycles.map(c=>`<option value="${c}">${c}</option>`).join('')} </select> <select class="filter-select" onchange="filterArchive('${L}','section',this.value)" style="background:var(--bg-card);border:1px solid var(--border-dim);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:5px 8px;border-radius:3px;outline:none"> <option value="all">ALL SECTIONS</option> ${sections.map(s=>`<option value="${s}">${s.toUpperCase()}</option>`).join('')} </select> </div> <div class="card fade-in"> <div class="card-head"><span class="card-title">FORECAST CYCLE LOG — ${loc}</span></div> <div class="card-body" style="overflow-x:auto"> <table class="archive-table" id="archive-table-${L}"> <thead><tr> <th>DATE</th><th>CYCLE</th><th>SECTION</th><th>VERSION</th><th>ANALYST</th><th>NOTES</th><th></th> </tr></thead> <tbody>${tableRows}</tbody> </table> <button class="add-row-btn" onclick="addArchiveRow('${L}')">+ ADD ENTRY</button> </div> </div>`;
+}
+
+// ── STOPLIGHT TABLE UPDATERS ──────────────────────────────
+function updateStoplightThreat(loc, idx, val) {
+const data = getStoplight(loc);
+data[idx].threat = val;
+setStoplight(loc, data);
+}
+function updateStoplightRemarks(loc, idx, val) {
+const data = getStoplight(loc);
+data[idx].remarks = val;
+setStoplight(loc, data);
+}
+
+// ── ARCHIVE HELPERS ───────────────────────────────────────
+function updateArchiveRow(loc, idx, field, val) {
+const rows = getArchive(loc);
+rows[idx][field] = val;
+setArchive(loc, rows);
+}
+function deleteArchiveRow(loc, idx) {
+const rows = getArchive(loc);
+rows.splice(idx, 1);
+setArchive(loc, rows);
+renderSection();
+}
+function addArchiveRow(loc) {
+const rows = getArchive(loc);
+const next = rows.length ? rows.length + 1 : 1;
+rows.unshift({
+id: Date.now(), date: new Date().toISOString().slice(0,10),
+cycle: STATE.currentCycle, section: STATE.currentSection,
+version: `v${next}.0`, analyst: ‘’, notes: ‘’, locked: false,
+});
+setArchive(loc, rows);
+renderSection();
+}
+function filterArchive(loc, field, val) {
+const rows = document.querySelectorAll(`#archive-table-${loc} tbody tr`);
+rows.forEach(row => {
+if (val === ‘all’) { row.style.display = ‘’; return; }
+const cell = field === ‘cycle’ ? row.cells[1] : row.cells[2];
+row.style.display = cell && cell.textContent.trim().toLowerCase().includes(val.toLowerCase()) ? ‘’ : ‘none’;
+});
+}
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// APP.JS — Main application controller
+// ═══════════════════════════════════════════════════════════
+
+// ── INIT ──────────────────────────────────────────────────
+window.addEventListener(‘DOMContentLoaded’, () => {
+loadState();
+checkAuth();
+startClock();
+});
+
+// ── AUTH ──────────────────────────────────────────────────
+const VALID_CREDENTIALS = { demo: ‘demo1234’, admin: ‘opws2025’, analyst: ‘wx4ops!’ };
+
+function checkAuth() {
+const session = sessionStorage.getItem(‘var_opws_user’);
+if (session) {
+STATE.loginUser = session;
+showApp();
+}
+}
+
+function attemptLogin() {
+const user = document.getElementById(‘loginUser’).value.trim();
+const pass = document.getElementById(‘loginPass’).value;
+const errEl = document.getElementById(‘loginError’);
+
+if (VALID_CREDENTIALS[user] && VALID_CREDENTIALS[user] === pass) {
+STATE.loginUser = user;
+sessionStorage.setItem(‘var_opws_user’, user);
+errEl.classList.add(‘hidden’);
+document.getElementById(‘loginOverlay’).style.animation = ‘fadeOut 0.4s ease forwards’;
+setTimeout(showApp, 400);
+} else {
+errEl.classList.remove(‘hidden’);
+document.getElementById(‘loginPass’).value = ‘’;
+document.getElementById(‘loginPass’).focus();
+}
+}
+
+// Allow Enter key on login
+document.addEventListener(‘keydown’, e => {
+if (e.key === ‘Enter’) {
+if (!document.getElementById(‘loginOverlay’).classList.contains(‘hidden’) &&
+!document.getElementById(‘app’).classList.contains(‘hidden’) === false) {
+attemptLogin();
+}
+}
+});
+
+function showApp() {
+document.getElementById(‘loginOverlay’).classList.add(‘hidden’);
+document.getElementById(‘app’).classList.remove(‘hidden’);
+renderApp();
+}
+
+function logout() {
+sessionStorage.removeItem(‘var_opws_user’);
+STATE.loginUser = null;
+document.getElementById(‘app’).classList.add(‘hidden’);
+document.getElementById(‘loginOverlay’).classList.remove(‘hidden’);
+document.getElementById(‘loginUser’).value = ‘’;
+document.getElementById(‘loginPass’).value = ‘’;
+}
+
+// Add fadeOut keyframe
+const style = document.createElement(‘style’);
+style.textContent = ‘@keyframes fadeOut { to { opacity: 0; } }’;
+document.head.appendChild(style);
+
+// ── RENDER APP ────────────────────────────────────────────
+function renderApp() {
+renderLocationTabs();
+renderSectionNav();
+renderSection();
+}
+
+// ── LOCATION TABS ─────────────────────────────────────────
+function renderLocationTabs() {
+const track = document.querySelector(’.loc-tab-track’);
+const addBtn = track.querySelector(’.loc-tab-add’);
+
+// Remove existing loc-tab buttons
+track.querySelectorAll(’.loc-tab’).forEach(el => el.remove());
+
+const buttons = STATE.locations.map(loc => {
+const names = { TJRV: ‘Roosevelt Roads, PR’, SVMI: ‘Simón Bolívar, VE’ };
+const btn = document.createElement(‘button’);
+btn.className = `loc-tab ${loc === STATE.currentLocation ? 'active' : ''}`;
+btn.dataset.loc = loc;
+btn.innerHTML = `<span class="loc-icao">${loc}</span><span class="loc-name">${names[loc] || 'AOR Location'}</span>`;
+btn.onclick = () => switchLocation(loc);
+return btn;
+});
+
+buttons.forEach(b => track.insertBefore(b, addBtn));
+}
+
+// ── SECTION NAV ───────────────────────────────────────────
+function renderSectionNav() {
+document.querySelectorAll(’.nav-item’).forEach(el => {
+el.classList.toggle(‘active’, el.dataset.section === STATE.currentSection);
+});
+}
+
+// ── RENDER SECTION ────────────────────────────────────────
+function renderSection() {
+const content = document.getElementById(‘mainContent’);
+const loc = STATE.currentLocation;
+const section = STATE.currentSection;
+
+let html = ‘’;
+switch (section) {
+case ‘climatology’: html = buildClimatology(loc); break;
+case ‘observations’: html = buildObservations(loc); break;
+case ‘upper-air’: html = buildUpperAir(loc); break;
+case ‘model-guidance’: html = buildModelGuidance(loc); break;
+case ‘integrated’: html = buildIntegrated(loc); break;
+case ‘archive’: html = buildArchive(loc); break;
+default: html = buildClimatology(loc);
+}
+
+content.innerHTML = html;
+content.scrollTop = 0;
+
+if (STATE.searchQuery) applySearch();
+}
+
+// ── SWITCH LOCATION ───────────────────────────────────────
+function switchLocation(loc) {
+STATE.currentLocation = loc;
+document.querySelectorAll(’.loc-tab’).forEach(el => {
+el.classList.toggle(‘active’, el.dataset.loc === loc);
+});
+renderSection();
+showToast(`📍 Switched to ${loc}`);
+}
+
+// ── SWITCH SECTION ────────────────────────────────────────
+function switchSection(section) {
+STATE.currentSection = section;
+renderSectionNav();
+renderSection();
+}
+
+// ── CYCLE ────────────────────────────────────────────────
+function setCycle(cycle) {
+STATE.currentCycle = cycle;
+showToast(`🔄 Forecast cycle set to ${cycle}`);
+// Update meta chip if visible
+const chip = document.querySelector(’.meta-chip:last-child’);
+if (chip && chip.textContent.includes(‘CYCLE’)) chip.textContent = `CYCLE: ${cycle}`;
+}
+
+// ── DUPLICATE AOR ─────────────────────────────────────────
+function duplicateAOR() {
+const name = prompt(‘Enter ICAO code for new AOR location (e.g. MPTO):’);
+if (!name) return;
+const code = name.trim().toUpperCase().slice(0, 4);
+if (!code) return;
+if (STATE.locations.includes(code)) {
+showToast(`⚠ ${code} already exists`);
+return;
+}
+STATE.locations.push(code);
+saveState();
+renderLocationTabs();
+switchLocation(code);
+showToast(`✓ AOR ${code} added — TJRV structure duplicated`);
+}
+
+</script>
+</body>
+</html>
